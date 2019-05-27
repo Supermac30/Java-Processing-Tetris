@@ -9,7 +9,6 @@
  */
  
 import processing.sound.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import org.gamecontrolplus.gui.*;
 import org.gamecontrolplus.*;
@@ -51,7 +50,7 @@ int[] nextTetrimino = {-1,0,0,0,0,0,0,-1}; // holds the values of the next seven
 int randomLoc; // holds the random location that will be given out
 int rand; // holds the random value that will be returned by chooseNext()
 Tetrimino boy = new Tetrimino(chooseNext()); // holds the tetrimino currently falling
-boolean controller = false; // holds whether or not you are playing with a compatable controller
+boolean controller = true; // holds whether or not you are playing with a compatable controller
 
 
 class Tetrimino {
@@ -393,7 +392,7 @@ void fixBoard(){
   linesCleared += totalCleared;
   addPoints(totalCleared);
   if (totalCleared != 0){
-    level = (int)((-1 + sqrt(1 + 4*linesCleared))/2);
+    level = (int)((-1 + sqrt(1 + 4*linesCleared))/2); // solves the equation linesCleared = ((level)(level+1))/2
   }
 }
 
@@ -440,7 +439,7 @@ void gameScreen(){
   }
   
   // makes the block fall at a certian speed
-  if (frameCount % (60 - level*3)  == 0) {
+  if (frameCount % ceil(60 / pow(1.4,level))  == 0) {
     boy.fall();
   }
   
@@ -450,6 +449,11 @@ void gameOverScreen(){
   // comes up when the player loses
   background(0);
   text("gameover",width/2,height/2);
+}
+
+void menuScreen(){
+  // Is the menu that first comes up
+  // TODO
 }
 
 void setup() {
@@ -506,6 +510,7 @@ void draw() {
   // holds the current screen of the program
   switch(screen){
     case 0:
+      menuScreen();
       break;
     case 1:
       gameScreen();
@@ -552,22 +557,24 @@ void controllerInput(){
 
 void keyPressed() {
   //handles a key being pressed
-  if (keyCode == LEFT) {
-    boy.left();
-  }
-  if (keyCode == RIGHT) {
-    boy.right();
-  }
-  if (keyCode == UP) {
-    boy.hardDrop();
-  }
-  if (keyCode == DOWN) {
-    boy.fall();
-  }
-  if (key == 'a'){
-    boy.rotate(-1);
-  }
-  if (key == 'd'){
-    boy.rotate(1);
+  if (!controller){
+    if (keyCode == LEFT) {
+      boy.left();
+    }
+    if (keyCode == RIGHT) {
+      boy.right();
+    }
+    if (keyCode == UP) {
+      boy.hardDrop();
+    }
+    if (keyCode == DOWN) {
+      boy.fall();
+    }
+    if (key == 'a'){
+      boy.rotate(-1);
+    }
+    if (key == 'd'){
+      boy.rotate(1);
+    } 
   }
 }
