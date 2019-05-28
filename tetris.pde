@@ -21,9 +21,11 @@ float X; // holds the value of left and right on the D-Pad
 float Y; // holds the value of up and down on the D-Pad
 boolean XBUTTON; // holds whether or not x is pressed
 boolean CIRCLE; // holds whether or not circle is pressed
+boolean TRIANGLE; // holds whether or not triangle is pressed
 int lastPressed0 = 0; // holds the time since a direction was pressed
 int lastPressed1 = 0; // holds the time since a button was pressed
-int wait = 4; // holds the amount of frames until a button can be pressed again
+int wait0 = 5; // holds the amount of frames until a movement button can be pressed again
+int wait1 = 5; // holds the amount of frames until a rotation button can be pressed again
 
 SoundFile music;
 SoundFile drop;
@@ -40,17 +42,21 @@ int gameHeight = blockWidth*20; // holds the height of the board
 int amount = 7; // holds the amount of tetrimino
 boolean occupied[][] = new boolean[21][10]; // stores all the currently occupied blocks
 color colorMap[][] = new color[20][10]; // stores the color of all the occupied blocks
-int upNext; // holds the identity of the tetrimino coming up next
 boolean fall = true; // holds whether or not the tetrimino should fall
 int time = 31; // holds the time since the tetrimino hit a surface
 int level = 0; // holds the level currently on
 int screen = 1; // holds the screen you are currently on
 int linesCleared = 0; // holds the number of lines cleared
+boolean pressedHold = false;
 int[] nextTetrimino = {-1,0,0,0,0,0,0,-1}; // holds the values of the next seven tetriminos
 int randomLoc; // holds the random location that will be given out
 int rand; // holds the random value that will be returned by chooseNext()
-Tetrimino boy = new Tetrimino(chooseNext()); // holds the tetrimino currently falling
-boolean controller = true; // holds whether or not you are playing with a compatable controller
+Tetrimino boy = new Tetrimino(chooseNext(), 0); // holds the tetrimino currently falling
+int upNext = chooseNext(); // holds the identity of the tetrimino coming up next
+Tetrimino nextBoy = new Tetrimino(upNext, 1); // holds the tetrimino that will come up next
+Tetrimino hold; // holds the tetrimino in hold
+Tetrimino temp; // is a temporary tetrimino for switching boy and hold
+boolean controller = false; // holds whether or not you are playing with a compatable controller
 
 
 class Tetrimino {
@@ -64,11 +70,27 @@ class Tetrimino {
   color c; // holds the color of the tetrimino
   boolean hardDrop = false; // holds whether or not the tetrimino fell because of a hardDrop
   int start; // holds the framecount it began at
+  int position; // 0 = controlled by player, 1 = next up, 2 = in hold
+  int type; // store the type of the tetrimino
   
-  Tetrimino(int type) {
+  Tetrimino(Tetrimino copy, int pos){
+    // copies another Tetrimino
+    start = frameCount;    
+    position = pos;
+    this.type = copy.type;
+    initialiseBlocks();
+  }
+  
+  Tetrimino(int type, int pos) {
     // creates the tetrimino with the type as a parameter
     start = frameCount;
-    
+    position = pos;
+    this.type = type;
+    initialiseBlocks();
+  }
+  
+  void initialiseBlocks(){
+    // creates the starting position and color of the tetrimino given its type
     switch(type) {
       case 0: //longboy
         for (int i = 0; i < 4; i++) {
@@ -165,9 +187,7 @@ class Tetrimino {
         c = color(174, 32, 214);
         break;
     }
-
   }
-
   boolean checkIfEnd() {
     //checks if the tetrimino has hit the ground
     for (int[] block : blocks) {
@@ -183,11 +203,26 @@ class Tetrimino {
 
   void makeBlocks() {
     //builds the tetrimino from the blocks given
-    fill(c);
-    for (int[] block : blocks) {
-      rect(block[0]*blockWidth, block[1]*blockWidth, blockWidth, blockWidth);
+    if (position == 0){ // if the tetrimino is controlled by the player
+      fill(c);
+      for (int[] block : blocks) {
+        rect(block[0]*blockWidth, block[1]*blockWidth, blockWidth, blockWidth);
+      }
     }
     
+    if (position == 1){ // if the tetrimino is in the up next block
+      fill(c);
+      for (int[] block : blocks) {
+        rect(block[0]*blockWidth + gameWidth - 125, block[1]*blockWidth + 230, blockWidth, blockWidth);
+      }
+    }
+    
+    if (position == 2){ // if the tetrimino is in hold
+      fill(c);
+      for (int[] block : blocks) {
+        rect(block[0]*blockWidth + gameWidth - 125, block[1]*blockWidth + 550, blockWidth, blockWidth);
+      }
+    }
   }
 
   void fall() {
@@ -312,6 +347,9 @@ void createGame() {
   text("level: "+level,gameWidth+10,36+50);
   text("next block", gameWidth+10, 36+150);
   rect(gameWidth+10, 36+180, 180, 180);
+  text("hold", gameWidth+10, 500);
+  fill(255,255,255);
+  rect(gameWidth+10, 500+36, 180, 180);
 
   // builds all blocks in occupied
   for (int i = 0; i < 20; i++) {
@@ -336,6 +374,10 @@ int[][] copy2d(int array2d[][]){
 }
 
 int chooseNext(){
+  // chooses the next 7 tetriminos that are all different in random order.
+  // If the next 7 tetriminos are already chosen, -1 didn't reach index 0 the next index is returned and all numbers are moved back.
+  // To put the numbers from 0 to 6 in random order an algorithm close to shuffling cards is used, where a random index is taken out and another index is chosen from a smaller arraylist.
+
   if (nextTetrimino[0] == -1){
     ArrayList<Integer> values = new ArrayList<Integer> (Arrays.asList(0,1,2,3,4,5,6));
     for (int i = 0; i < amount; i++){
@@ -413,12 +455,33 @@ void addPoints(int linesCleared){
       break;
   }
   score += boy.softDrop; // adds points for the drop
+
+}
+
+void hold(){
+  // puts a block in hold and makes the block in hold, if there is one, come into the board
+  temp = new Tetrimino(boy, 0); // stores boy in temp so that boy and hold can switch
+  pressedHold = true;
+  if (hold == null){
+    boy = new Tetrimino(upNext, 0);
+    upNext = chooseNext();
+    nextBoy = new Tetrimino(upNext, 1);
+  }
+  else{
+    boy = new Tetrimino(hold, 0); // moves the tetrimino in hold into the board
+  }
+  hold = new Tetrimino(temp, 2); // moves the tetrimino into hold
+  
 }
 
 void gameScreen(){
   // holds the game screen
   createGame();
   boy.makeBlocks();
+  nextBoy.makeBlocks();
+  if (hold != null){
+    hold.makeBlocks();
+  }
   
   // creates a new block if the block reaches the ground
   if (boy.checkIfEnd()) {
@@ -428,9 +491,11 @@ void gameScreen(){
     
     if (boy.hardDrop || time == 40){ // gives the player some time to move the tetrimino until the block is made perminant
       boy.makePerminant();
-      boy = new Tetrimino(upNext);
+      boy = new Tetrimino(upNext, 0);
       upNext = chooseNext();
+      nextBoy = new Tetrimino(upNext, 1);
       fall = true;
+      pressedHold = false;
     }
   }
   
@@ -471,7 +536,7 @@ void setup() {
     control = ControlIO.getInstance(this);
     stick = control.getMatchedDevice("PS1Classic");
     if (stick == null){
-      println("no controller connected");
+      println("no recognised controller connected");
     }
   }
   
@@ -484,10 +549,7 @@ void setup() {
   for (int i = 0; i<10; i++) {
     occupied[20][i] = true;
   }
-  
-  // initialises the first random next block
-  upNext = (int) random(0, amount);
-  
+ 
   // plays the song
   path = sketchPath(musicName);
   music = new SoundFile(this, path);
@@ -527,9 +589,10 @@ void controllerInput(){
   Y = stick.getSlider("Y").getValue();
   XBUTTON = stick.getButton("XBUTTON").pressed();
   CIRCLE = stick.getButton("CIRCLE").pressed();
+  TRIANGLE = stick.getButton("TRIANGLE").pressed();
   
   // If the time since last press is long enough handle input
-  if (frameCount - lastPressed0 > wait){
+  if (frameCount - lastPressed0 > wait0){
     if (X > 0.5){
       boy.right();
     }
@@ -544,12 +607,15 @@ void controllerInput(){
     }
     lastPressed0 = frameCount;
   }
-  if (frameCount - lastPressed1 > wait){
+  if (frameCount - lastPressed1 > wait1){
     if (XBUTTON){
       boy.rotate(-1);
     }
     if (CIRCLE){
       boy.rotate(1);
+    }
+    if (TRIANGLE && !pressedHold){
+      hold();
     }
     lastPressed1 = frameCount;
   }
@@ -576,5 +642,8 @@ void keyPressed() {
     if (key == 'd'){
       boy.rotate(1);
     } 
+    if (key == 'w' && !pressedHold){
+      hold();
+    }
   }
 }
