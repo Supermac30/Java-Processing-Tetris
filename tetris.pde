@@ -47,7 +47,7 @@ int time = 31; // holds the time since the tetrimino hit a surface
 int level = 0; // holds the level currently on
 int screen = 1; // holds the screen you are currently on
 int linesCleared = 0; // holds the number of lines cleared
-boolean pressedHold = false;
+boolean pressedHold = false; // holds whether or not hold has been pressed this round
 int[] nextTetrimino = {-1,0,0,0,0,0,0,-1}; // holds the values of the next seven tetriminos
 int randomLoc; // holds the random location that will be given out
 int rand; // holds the random value that will be returned by chooseNext()
