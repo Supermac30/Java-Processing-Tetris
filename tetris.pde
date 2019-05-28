@@ -461,6 +461,9 @@ void addPoints(int linesCleared){
 void hold(){
   // puts a block in hold and makes the block in hold, if there is one, come into the board
   temp = new Tetrimino(boy, 0); // stores boy in temp so that boy and hold can switch
+  if (pressedHold){
+    return;
+  }
   pressedHold = true;
   if (hold == null){
     boy = new Tetrimino(upNext, 0);
@@ -614,7 +617,7 @@ void controllerInput(){
     if (CIRCLE){
       boy.rotate(1);
     }
-    if (TRIANGLE && !pressedHold){
+    if (TRIANGLE){
       hold();
     }
     lastPressed1 = frameCount;
@@ -642,7 +645,7 @@ void keyPressed() {
     if (key == 'd'){
       boy.rotate(1);
     } 
-    if (key == 'w' && !pressedHold){
+    if (key == 'w'){
       hold();
     }
   }
