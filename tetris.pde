@@ -1,5 +1,4 @@
-/* //<>// //<>//
- * @author Mark Bedaywi
+/* @author Mark Bedaywi
  * This is a version of Tetris for my 11U CPT
  * 
  * A Tetrimino is the name of a block in Tetris, it is made up of four blocks and is connected othogonally
