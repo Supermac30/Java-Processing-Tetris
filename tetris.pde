@@ -1,4 +1,4 @@
-/*
+/* //<>// //<>//
  * @author Mark Bedaywi
  * This is a version of Tetris for my 11U CPT
  * 
@@ -24,8 +24,7 @@ boolean CIRCLE; // holds whether or not circle is pressed
 boolean TRIANGLE; // holds whether or not triangle is pressed
 int lastPressed0 = 0; // holds the time since a direction was pressed
 int lastPressed1 = 0; // holds the time since a button was pressed
-int wait0 = 5; // holds the amount of frames until a movement button can be pressed again
-int wait1 = 5; // holds the amount of frames until a rotation button can be pressed again
+int wait = 5; // holds the amount of frames until a button on the controller can be pressed again
 
 SoundFile music;
 SoundFile drop;
@@ -56,9 +55,19 @@ int upNext = chooseNext(); // holds the identity of the tetrimino coming up next
 Tetrimino nextBoy = new Tetrimino(upNext, 1); // holds the tetrimino that will come up next
 Tetrimino hold; // holds the tetrimino in hold
 Tetrimino temp; // is a temporary tetrimino for switching boy and hold
-Button startButton = new Button(100, 150, 400, 100, "Start" ,color (0,0,0), color (255,255,255), color (255,255,255));
-Button settingsButton = new Button(100, 300, 400, 100, "Settings" ,color (0,0,0), color (255,255,255), color (255,255,255));
-Button exitButton = new Button(100, 450, 400, 100, "Quit" ,color (0,0,0), color (255,255,255), color (255,255,255));
+int difficulty = 50; // holds the difficulty of the game
+
+Button startButton = new Button(100, 150, 400, 100, "Single Player");
+Button hostServer = new Button(100, 300, 200, 100, "Host Server");
+Button joinServer = new Button(300, 300, 200, 100, "Join Server");
+Button settingsButton = new Button(100, 450, 400, 100, "Settings");
+Button exitButton = new Button(100, 600, 400, 100, "Quit");
+
+Button enableController = new Button(100,100,400,100, "Enable controller");
+Button setDifficulty = new Button(100, 250, 400, 100, "Difficulty: " + difficulty);
+Button setSensitivity = new Button(100, 400, 400, 100, "Controller Sensitivity: "+ (10-wait));
+Button returnToMenu = new Button(100, 550, 400, 100, "Return to the menu");
+
 boolean controller = false; // holds whether or not you are playing with a compatable controller
 
 class Button{
@@ -68,20 +77,17 @@ class Button{
   float buttonWidth; // holds the width of the button
   float buttonHeight; // holds the height of the button
   String text; // holds the text within the button
-  color fill; // holds the color of the button
-  color outline; // holds the color of the outline of the button
-  color textColor;
+  color fill = color (0,0,0); // holds the color of the button
+  color outline = color (255,255,255); // holds the color of the outline of the button
+  color textColor =  color (255,255,255);
   int textSize = 20;
-  Button(float buttonX, float buttonY, float buttonWidth, float buttonHeight, String text, color c, color outline, color textColor){
+  Button(float buttonX, float buttonY, float buttonWidth, float buttonHeight, String text){
     // button constructor
     this.buttonX = buttonX;
     this.buttonY = buttonY;
     this.buttonWidth = buttonWidth;
     this.buttonHeight = buttonHeight;
     this.text = text;
-    this.fill = c;
-    this.outline = outline;
-    this.textColor = textColor;
   }
   void buildButton(){
     // creates the button
@@ -90,7 +96,7 @@ class Button{
     textSize(textSize);
     rect(buttonX,buttonY,buttonWidth,buttonHeight);
     fill(textColor);
-    text(text, buttonX+(buttonWidth*0.5) - text.length()*5, buttonY+(buttonHeight*0.5));
+    text(text, buttonX+(buttonWidth*0.5) - text.length()*4.5, buttonY+(buttonHeight*0.5) + (0.2*textSize));
   }
   boolean isPressed(){
     // returns whether or not the button has been pressed
@@ -559,31 +565,76 @@ void gameScreen(){
   }
   
   // makes the block fall at a certian speed
-  if (frameCount % ceil(60 / pow(1.4,level))  == 0) {
+  if (frameCount % ceil(60 / pow(1 + difficulty/100 ,level))  == 0) {
     boy.fall();
   }
   
 }
 
 void gameOverScreen(){
-  // comes up when the player loses
+  // comes up when the player loses //<>//
   background(0);
   text("gameover",width/2,height/2);
 }
 
+void settingsScreen(){
+  background(100,100,100);
+  if (controller){
+    enableController.text = "Disable Controller";
+  }
+  else{
+    enableController.text = "Enable Controller";
+  }
+  textSize(15);
+  text("Remember to connect your controller before opening the file",80,215);
+  
+  // enables or disables your controller
+  enableController.buildButton();
+  returnToMenu.buildButton();
+  setDifficulty.buildButton();
+  setSensitivity.buildButton();
+  
+  if (enableController.isPressed()){
+    delay(100);
+    controller = !controller;
+    if (controller){
+      controllerSetup();
+    }
+  }
+  if (setDifficulty.isPressed()){
+    delay(100);
+    difficulty = (difficulty + 10) % 110;
+    setDifficulty.text = "Difficulty: " + difficulty;
+  }
+  if (setSensitivity.isPressed()){
+    delay(100);
+    wait = (wait + 1) % 10;
+    setSensitivity.text = "Controller Sensitivity: " + (10-wait);
+  }
+  if (returnToMenu.isPressed()){
+    delay(200);
+    screen = 0;
+  }
+}
+
 void menuScreen(){
-  // Is the menu that first comes up //<>//
+  // Is the menu that first comes up 
+  background(100,100,100);
   textSize(64);
   text("Tetris",width/2 - 100, 100);
   startButton.buildButton();
   settingsButton.buildButton();
+  hostServer.buildButton();
+  joinServer.buildButton();
   exitButton.buildButton();
+  
   
   if (startButton.isPressed()){
     screen = 3;
   }
   if (settingsButton.isPressed()){
-    
+    delay(200);
+    screen = 5;
   }
   if (exitButton.isPressed()){
     exit();
@@ -597,14 +648,6 @@ void setup() {
 
 void gameSetup(){
   // setups up the game
-  //connects to controller - remember to connect control before starting sketch
-  if (controller){
-    control = ControlIO.getInstance(this);
-    stick = control.getMatchedDevice("PS1Classic");
-    if (stick == null){
-      println("no recognised controller connected");
-    }
-  }
   
   //initialises occupied blocks
   for (int i = 0; i<19; i++) {
@@ -630,12 +673,29 @@ void gameSetup(){
   screen = 1;
 }
 
+void controllerSetup(){
+  //connects to controller - remember to connect control before starting sketch
+  control = ControlIO.getInstance(this);
+  if (stick == null){
+    stick = control.getMatchedDevice("PS1Classic");
+  }
+  if (stick == null){
+    println("no recognised controller connected");
+  }
+}
+
 void loadingScreen(){
   // makes a loading screen
   background(255,255,255);
   fill(0);
   textSize(20);
-  text("Please wait, loading...", 20, height / 2);
+  text("Please wait, loading...", 200, 100);
+  if (!controller){
+    text("Keyboard Controls:", 20, 200);
+    text("- Arrow keys for movement", 40, 250);
+    text("- A and D for rotation", 40, 300);
+    text("- W to hold", 40, 350);
+  }
   screen = 4;
 }
 
@@ -662,19 +722,28 @@ void draw() {
     case 4:
       gameSetup();
       break;
+    case 5:
+      settingsScreen();
+      break;
   }
 }
 
 void controllerInput(){
   // This function takes in input from the controller and handles it
-  X = stick.getSlider("X").getValue();
+  try{
+    X = stick.getSlider("X").getValue();
+  }
+  catch(Exception e){
+    controller = false;
+    return;
+  }
   Y = stick.getSlider("Y").getValue();
   XBUTTON = stick.getButton("XBUTTON").pressed();
   CIRCLE = stick.getButton("CIRCLE").pressed();
   TRIANGLE = stick.getButton("TRIANGLE").pressed();
   
   // If the time since last press is long enough handle input
-  if (frameCount - lastPressed0 > wait0){
+  if (frameCount - lastPressed0 > wait){
     if (X > 0.5){
       boy.right();
     }
@@ -689,7 +758,7 @@ void controllerInput(){
     }
     lastPressed0 = frameCount;
   }
-  if (frameCount - lastPressed1 > wait1){
+  if (frameCount - lastPressed1 > wait){
     if (XBUTTON){
       boy.rotate(-1);
     }
