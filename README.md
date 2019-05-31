@@ -6,5 +6,6 @@ It is still a work in progress.
 - [X] add a hold option
 - [X] add a start screen with the ability to change settings
 - [X] add controller compatibility
+- [ ] add a pause button
 - [ ] refactor code to put all grid methods in a class
 - [ ] add online functionality
