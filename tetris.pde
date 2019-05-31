@@ -45,7 +45,7 @@ color colorMap[][] = new color[20][10]; // stores the color of all the occupied 
 boolean fall = true; // holds whether or not the tetrimino should fall
 int time = 31; // holds the time since the tetrimino hit a surface
 int level = 0; // holds the level currently on
-int screen = 1; // holds the screen you are currently on
+int screen = 0; // holds the screen you are currently on
 int linesCleared = 0; // holds the number of lines cleared
 boolean pressedHold = false; // holds whether or not hold has been pressed this round
 int[] nextTetrimino = {-1,0,0,0,0,0,0,-1}; // holds the values of the next seven tetriminos
@@ -56,8 +56,60 @@ int upNext = chooseNext(); // holds the identity of the tetrimino coming up next
 Tetrimino nextBoy = new Tetrimino(upNext, 1); // holds the tetrimino that will come up next
 Tetrimino hold; // holds the tetrimino in hold
 Tetrimino temp; // is a temporary tetrimino for switching boy and hold
+Button startButton = new Button(100, 150, 400, 100, "Start" ,color (0,0,0), color (255,255,255), color (255,255,255));
+Button settingsButton = new Button(100, 300, 400, 100, "Settings" ,color (0,0,0), color (255,255,255), color (255,255,255));
+Button exitButton = new Button(100, 450, 400, 100, "Quit" ,color (0,0,0), color (255,255,255), color (255,255,255));
 boolean controller = false; // holds whether or not you are playing with a compatable controller
 
+class Button{
+  // makes the UI much easier to work with
+  float buttonX; // holds the x coordinate of the button
+  float buttonY; // holds the y coordinate of the button
+  float buttonWidth; // holds the width of the button
+  float buttonHeight; // holds the height of the button
+  String text; // holds the text within the button
+  color fill; // holds the color of the button
+  color outline; // holds the color of the outline of the button
+  color textColor;
+  int textSize = 20;
+  Button(float buttonX, float buttonY, float buttonWidth, float buttonHeight, String text, color c, color outline, color textColor){
+    // button constructor
+    this.buttonX = buttonX;
+    this.buttonY = buttonY;
+    this.buttonWidth = buttonWidth;
+    this.buttonHeight = buttonHeight;
+    this.text = text;
+    this.fill = c;
+    this.outline = outline;
+    this.textColor = textColor;
+  }
+  void buildButton(){
+    // creates the button
+    fill(fill);
+    stroke(outline);
+    textSize(textSize);
+    rect(buttonX,buttonY,buttonWidth,buttonHeight);
+    fill(textColor);
+    text(text, buttonX+(buttonWidth*0.5) - text.length()*5, buttonY+(buttonHeight*0.5));
+  }
+  boolean isPressed(){
+    // returns whether or not the button has been pressed
+    if (mousePressed){
+      if (mouseX > buttonX && mouseX < buttonX + buttonWidth && mouseY > buttonY && mouseY < buttonY + buttonHeight){
+        return true;
+      }
+    }
+    return false;  
+  }
+  
+  boolean isHover(){
+    // returns whether or not the button is hovered over
+    if (mouseX > buttonX && mouseX < buttonX + buttonWidth && mouseY > buttonY && mouseY > buttonY + buttonHeight){
+        return true;
+    }
+    return false;
+  }
+}
 
 class Tetrimino {
   // Holds the functions necissary to control the tetrimino
@@ -520,20 +572,31 @@ void gameOverScreen(){
 }
 
 void menuScreen(){
-  // Is the menu that first comes up
-  // TODO
+  // Is the menu that first comes up //<>//
+  textSize(64);
+  text("Tetris",width/2 - 100, 100);
+  startButton.buildButton();
+  settingsButton.buildButton();
+  exitButton.buildButton();
+  
+  if (startButton.isPressed()){
+    screen = 3;
+  }
+  if (settingsButton.isPressed()){
+    
+  }
+  if (exitButton.isPressed()){
+    exit();
+  }
 }
 
 void setup() {
   //runs once
   size(600, 800);
-  
-  // makes a loading screen
-  background(255);
-  fill(0);
-  textSize(20);
-  text("Please wait, loading...", 20, height / 2);
-  
+}
+
+void gameSetup(){
+  // setups up the game
   //connects to controller - remember to connect control before starting sketch
   if (controller){
     control = ControlIO.getInstance(this);
@@ -563,7 +626,17 @@ void setup() {
   clear = new SoundFile(this, path);
   path = sketchPath(dropName);
   drop = new SoundFile(this, path);
-   
+  
+  screen = 1;
+}
+
+void loadingScreen(){
+  // makes a loading screen
+  background(255,255,255);
+  fill(0);
+  textSize(20);
+  text("Please wait, loading...", 20, height / 2);
+  screen = 4;
 }
 
 void draw() {
@@ -582,6 +655,12 @@ void draw() {
       break;
     case 2:
       gameOverScreen();
+      break;
+    case 3:
+      loadingScreen();
+      break;
+    case 4:
+      gameSetup();
       break;
   }
 }
