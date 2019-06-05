@@ -1,4 +1,4 @@
-/*  
+/*
  * @author Mark Bedaywi
  * This is a version of Tetris for my 11U CPT
  * 
@@ -13,7 +13,6 @@ import java.util.Arrays;
 import org.gamecontrolplus.gui.*;
 import org.gamecontrolplus.*;
 import net.java.games.input.*;
-import processing.net.*;
 
 ControlIO control;
 ControlDevice stick;
@@ -70,12 +69,277 @@ Button returnToMenu = new Button(100, 550, 400, 100, "Return to the menu");
 
 boolean controller = false; // holds whether or not you are playing with a compatable controller
 
-Server server = new Server(this, 7777);  
-Client client;
-boolean onlinePlay = false;
-boolean searchingForServer = false;
-String inputtedIP = "";
-String myIP = Server.ip();
+class Tetrimino {
+  // Holds the functions necissary to control the tetrimino
+  int blocks[][] = new int[4][2]; // holds the coordinates of each block as [x,y]
+  int rotCent[] = new int[2]; // holds the center of rotation
+  int startx = 5; // holds the starting x coordinate
+  int starty = 0; // holds the starting y coordinate
+  boolean wait = false; // holds the falling flag
+  int softDrop = 0; // holds the number of blocks the tetrimno fell with a soft drop
+  color c; // holds the color of the tetrimino
+  boolean hardDrop = false; // holds whether or not the tetrimino fell because of a hardDrop
+  int start; // holds the framecount it began at
+  int position; // 0 = controlled by player, 1 = next up, 2 = in hold
+  int type; // store the type of the tetrimino
+  
+  Tetrimino(Tetrimino copy, int pos){
+    // copies another Tetrimino
+    start = frameCount;    
+    position = pos;
+    this.type = copy.type;
+    initialiseBlocks();
+  }
+  
+  Tetrimino(int type, int pos) {
+    // creates the tetrimino with the type as a parameter
+    start = frameCount;
+    position = pos;
+    this.type = type;
+    initialiseBlocks();
+  }
+  
+  void initialiseBlocks(){
+    // creates the starting position and color of the tetrimino given its type
+    switch(type) {
+      case 0: //longboy
+        for (int i = 0; i < 4; i++) {
+          blocks[i][1] = starty + i;
+          blocks[i][0] = startx;
+        }
+        rotCent[0] = startx;
+        rotCent[1] = starty +2;
+        c = color(52, 120, 229);
+        break;
+        
+      case 1: // squareboy
+        for (int i = 0; i < 2; i++) {
+          for (int j = 0; j < 2; j++) {
+            blocks[j+i*2][1] = starty + j;
+            blocks[j+i*2][0] = startx + i;
+          }
+        }
+        rotCent[0] = startx;
+        rotCent[1] = starty + 1;
+        c = color(242, 213, 53);
+        break;
+        
+      case 2: // L boy
+        for (int i = 0; i < 3; i++){
+          blocks[i][1] = starty + i;
+          blocks[i][0] = startx;
+        }
+        blocks[3][1] = starty + 2;
+        blocks[3][0] = startx + 1;
+        
+        rotCent[0] = startx;
+        rotCent[1] = starty +2;
+        
+        c = color(255, 119, 15);
+        break;
+        
+      case 3: // reverse L boy
+        for (int i = 0; i < 3; i++){
+          blocks[i][1] = starty + i;
+          blocks[i][0] = startx;
+        }
+        blocks[3][1] = starty + 2;
+        blocks[3][0] = startx - 1;
+        
+        rotCent[0] = startx;
+        rotCent[1] = starty +2;
+        
+        c = color(25, 66, 132);
+        break;
+        
+      case 4: // left stair boy
+        for (int i = 0; i < 2; i++){
+          blocks[i][1] = starty + i;
+          blocks[i][0] = startx;
+        }
+        blocks[2][1] = starty;
+        blocks[2][0] = startx - 1;
+        blocks[3][1] = starty + 1;
+        blocks[3][0] = startx + 1;
+        
+        rotCent[0] = startx;
+        rotCent[1] = starty + 1;
+        
+        c = color(216, 32, 32);
+        break;
+        
+      case 5: // right stair boy
+        for (int i = 0; i < 2; i++){
+          blocks[i][1] = starty + i;
+          blocks[i][0] = startx;
+        }
+        blocks[2][1] = starty;
+        blocks[2][0] = startx + 1;
+        blocks[3][1] = starty + 1;
+        blocks[3][0] = startx - 1;
+        
+        rotCent[0] = startx;
+        rotCent[1] = starty + 1;
+        
+        
+        c = color(46, 175, 31);
+        break;
+      case 6: // T boy
+        blocks[0][1] = starty;
+        blocks[0][0] = startx;
+        for (int i = 1; i < 4; i++){
+          blocks[i][1] = starty + 1;
+          blocks[i][0] = startx - 2 + i;
+        }
+        
+        rotCent[0] = startx;
+        rotCent[1] = starty + 1;
+        c = color(174, 32, 214);
+        break;
+    }
+  }
+  
+  boolean checkIfEnd() {
+    //checks if the tetrimino has hit the ground
+    for (int[] block : blocks) {
+      if (occupied[block[1]+1][block[0]]) {
+        if (occupied[0][5]){ // ends the game
+          screen = 2;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void makeBlocks() {
+    //builds the tetrimino from the blocks given
+    if (position == 0){ // if the tetrimino is controlled by the player
+      fill(c);
+      for (int[] block : blocks) {
+        rect(block[0]*blockWidth, block[1]*blockWidth, blockWidth, blockWidth);
+      }
+    }
+    
+    if (position == 1){ // if the tetrimino is in the up next block
+      fill(c);
+      for (int[] block : blocks) {
+        rect(block[0]*blockWidth + gameWidth - 125, block[1]*blockWidth + 230, blockWidth, blockWidth);
+      }
+    }
+    
+    if (position == 2){ // if the tetrimino is in hold
+      fill(c);
+      for (int[] block : blocks) {
+        rect(block[0]*blockWidth + gameWidth - 125, block[1]*blockWidth + 550, blockWidth, blockWidth);
+      }
+    }
+  }
+
+  void fall() {
+    //moves the tetrimino one step downwards
+    if (!fall){ // doesn't fall if the fall flag 
+      return;
+    }
+   
+    for (int i = 0; i < 4; i++) {
+      blocks[i][1] ++;
+    }
+    rotCent[1] ++;
+    softDrop++;
+  }
+
+  void makePerminant() {
+    //makes the tetrimino part of the board
+    for (int[] block : blocks) {
+      occupied[block[1]][block[0]] = true;
+      colorMap[block[1]][block[0]] = c;
+    }
+    fixBoard();
+    drop.play();
+  }
+
+  void left() {
+    //moves the tetrimino left
+    //checks if the tetrimino will go offscreen or go into a tetrimino that is placed
+    for (int i = 0; i < 4; i++) {
+      if (blocks[i][0] - 1 < 0 || occupied[blocks[i][1]][blocks[i][0] - 1]) {
+        return;
+      }
+    }
+    for (int i = 0; i < 4; i++) {
+      blocks[i][0] --;
+    }
+    rotCent[0] --;
+
+  }
+
+  void right() {
+    // moves the tetrimino right
+    //checks if the tetrimino will go offscreen or go into a tetrimino that is placed
+    for (int i = 0; i < 4; i++) {
+      if (blocks[i][0] + 1 >= gameWidth/blockWidth || occupied[blocks[i][1]][blocks[i][0]+1]) {
+        return;
+      }
+    }
+    for (int i = 0; i < 4; i++) {
+      blocks[i][0] ++;
+    }
+    rotCent[0] ++;
+
+  }
+
+  void rotate(int direction) { // one is clockwise, negative one is anticlockwise
+    // rotates the tetrimino
+    // this function ensures the tetrimino doesn't rotate outside the screen or into a placed object
+    int distx, disty;
+    int distLeft = 0; // holds the max distance outside the screen to the left
+    int distRight = 0; // holds the max distance outside the screen to the right
+    int[][] temp = copy2d(blocks);
+    // multiplies the distance from the center of rotation by the matrix [[0 1][-1 0]] or [[0 -1][1 0]]
+    for (int i = 0; i < 4; i++){      
+      distx = blocks[i][0] - rotCent[0]; //<>//
+      disty = blocks[i][1] - rotCent[1]; //<>//
+      temp[i][0] = disty*direction + rotCent[0];
+      temp[i][1] = distx *-1*direction + rotCent[1];
+      if (0 - temp[i][0] > distLeft){
+        distLeft = 0 - temp[i][0];
+      }
+      if (temp[i][0] - 9 > distRight){
+        distRight = temp[i][0] - 9;
+      }
+    }
+    
+    // moves the tetrimino back into the screen if it is outside
+    for (int i = 0; i < 4; i++){
+      temp[i][0] += distLeft - distRight; 
+    }
+    
+    // doesn't rotate the tetrimino if it will go into an occupied space
+    for (int i = 0; i < 4; i++){
+      if (occupied[temp[i][1]][temp[i][0]]){
+        return;
+      }
+    }
+    
+    rotCent[0] += distLeft - distRight;
+    blocks = copy2d(temp);
+  }
+  
+  void hardDrop(){
+    // immediatly sends a block to the bottom
+    if (frameCount - start < 10){ // doesnt allow an immediate drop
+      return;
+    } 
+    int points = 0;
+    while(!this.checkIfEnd()){
+      this.fall();
+      points += 2;
+    }
+    softDrop += points; // adds double the points for a hard drop
+    hardDrop = true;
+  }
+}
 
 void createGame() {
   // creates the background
@@ -106,10 +370,6 @@ void createGame() {
         rect(j*blockWidth, i*blockWidth, blockWidth, blockWidth);
       }
     }
-  }
-  
-  if (onlinePlay){
-    println("Playing online");
   }
 }
 
@@ -265,7 +525,7 @@ void gameScreen(){
   
 }
 
-void gameOverScreen(){ 
+void gameOverScreen(){
   // comes up when the player loses
   background(0);
   text("gameover",width/2,height/2);
@@ -322,14 +582,6 @@ void menuScreen(){
   joinServer.buildButton();
   exitButton.buildButton();
   
-  if (hostServer.isPressed()){
-    startButton.text = "Start Battle";
-    screen = 6;
-  }
-  
-  if (joinServer.isPressed()){
-    screen = 7;
-  }
   
   if (startButton.isPressed()){
     screen = 3;
@@ -340,69 +592,6 @@ void menuScreen(){
   }
   if (exitButton.isPressed()){
     exit();
-  }
-  
-}
-
-void hostScreen(){
-  // holds the screen that comes up when you are the server
-  background(100,100,100);
-  textSize(64);
-  text("Tetris",width/2 - 100, 100);
-  textSize(20);
-  text("Your IP is: " + myIP, 100, 400);
-  text("Hosting on port 7777", 100, 450);
-  startButton.buildButton();
-  client = server.available();
-  
-  if (client == null){
-    startButton.fill = color(89, 98, 112);
-  } else {
-    startButton.fill = color(0, 0, 0);
-  }
-  
-  if (startButton.isPressed() && client != null) {
-    println("Game Started");
-    server.write("start");
-    onlinePlay = true;
-    screen = 3;
-  }
-  
-}
-
-void joinScreen(){
-  // holds the screen that comes up when you are the client
-  background(100,100,100);
-  textSize(64);
-  text("Tetris",width/2 - 100, 100);
-  textSize(20);
-  if (!searchingForServer){
-    text("Type in the IP of the server", 100, 250);
-    text(inputtedIP, 100, 300);
-    if (keyPressed && key != ENTER && key != BACKSPACE){
-      inputtedIP += key;
-      delay(200);
-    }
-    else if (keyPressed && key == ENTER){
-      text("Searching for server", 100, 350);
-      searchingForServer = true; 
-    }
-    else if (keyPressed && key == BACKSPACE && inputtedIP.length() != 0){
-      inputtedIP = inputtedIP.substring(0,inputtedIP.length()-1);
-      delay(100);
-      
-    }
-  }
-  else{
-    client = new Client(this, inputtedIP, 7777);
-    if (client.available() > 0 && client.available() != 123){
-      text("Waiting for server to start game", 100, 300);
-      onlinePlay = true;
-    } else if (client.available() == 123) {
-      screen = 3;
-    } else {
-      text("Server not found", 100, 300);
-    }
   }
   
 }
@@ -491,12 +680,6 @@ void draw() {
     case 5:
       settingsScreen();
       break;
-    case 6:
-      hostScreen();
-      break;
-    case 7:
-      joinScreen();
-      break;
   }
 }
 
@@ -524,7 +707,6 @@ void controllerInput(){
     }
     if (Y > 0.5 ){
       boy.fall();
-      boy.softDrop++;
     }
     if (Y < -0.5 ){
       boy.hardDrop();
@@ -559,7 +741,6 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       boy.fall();
-      boy.softDrop++;
     }
     if (key == 'a'){
       boy.rotate(-1);
