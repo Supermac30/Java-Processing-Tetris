@@ -36,20 +36,14 @@ String clearName = "clearSingle.mp3";
 String path;
 
 int score = 0; // holds the players score
-int blockWidth = 40; // holds the pixel width of each square block
-int gameWidth = blockWidth*10; // holds the length of the borad
-int gameHeight = blockWidth*20; // holds the height of the board
-int amount = 7; // holds the amount of tetrimino
-boolean occupied[][] = new boolean[21][10]; // stores all the currently occupied blocks
-color colorMap[][] = new color[20][10]; // stores the color of all the occupied blocks
+int amount = 7; // holds the amount of tetrimino block types
 boolean fall = true; // holds whether or not the tetrimino should fall
 int time = 31; // holds the time since the tetrimino hit a surface
-int level = 0; // holds the level currently on
 int screen = 0; // holds the screen you are currently on
 int linesCleared = 0; // holds the number of lines cleared
 boolean pressedHold = false; // holds whether or not hold has been pressed this round
 int[] nextTetrimino = {-1,0,0,0,0,0,0,-1}; // holds the values of the next seven tetriminos
-int randomLoc; // holds the random location that will be given out
+int randomLoc; // holds the random location that will be given out in the chooseNext() function
 int rand; // holds the random value that will be returned by chooseNext()
 Tetrimino boy = new Tetrimino(chooseNext(), 0); // holds the tetrimino currently falling
 int upNext = chooseNext(); // holds the identity of the tetrimino coming up next
@@ -57,6 +51,8 @@ Tetrimino nextBoy = new Tetrimino(upNext, 1); // holds the tetrimino that will c
 Tetrimino hold; // holds the tetrimino in hold
 Tetrimino temp; // is a temporary tetrimino for switching boy and hold
 int difficulty = 50; // holds the difficulty of the game
+
+Grid grid = new Grid();
 
 Button startButton = new Button(100, 150, 400, 100, "Single Player");
 Button hostServer = new Button(100, 300, 200, 100, "Host Server");
@@ -70,48 +66,18 @@ Button returnToMenu = new Button(100, 550, 400, 100, "Return to the menu");
 
 boolean controller = false; // holds whether or not you are playing with a compatable controller
 
-Server server = new Server(this, 7777);  
-Client client;
-boolean onlinePlay = false;
-boolean searchingForServer = false;
-String inputtedIP = "";
-String myIP = Server.ip();
+Server server = new Server(this, 7777); // holds the server
+Client client; // holds the client
+boolean onlinePlay = false; // holds whether or not you are playing online
+boolean searchingForServer = false; // holds whether or not you started to search for a server
+String inputtedIP = ""; // holds the input in the join screen
+String myIP = Server.ip(); // holds the ip of the user
+boolean isServer = false; // holds whether or not the user is the host
+int enemyScore; // holds the score the enemy
+String clientName; // holds the name of the client
+int attackEnemy = 0; // holds how many lines to send the enemy
 
-void createGame() {
-  // creates the background
-  background(211, 211, 211);
-  for (int i = 0; i <= gameWidth; i += blockWidth) {
-    line(i, 0, i, gameHeight);
-  }
-  for (int i = 0; i <= gameHeight; i += blockWidth) {
-    line(0, i, gameWidth, i);
-  }
 
-  textSize(32);
-  // place all outside board elements gameWidth+10 away
-  fill(0,0,0);
-  text("score: "+score, gameWidth+10, 36);
-  text("level: "+level,gameWidth+10,36+50);
-  text("next block", gameWidth+10, 36+150);
-  rect(gameWidth+10, 36+180, 180, 180);
-  text("hold", gameWidth+10, 500);
-  fill(255,255,255);
-  rect(gameWidth+10, 500+36, 180, 180);
-
-  // builds all blocks in occupied
-  for (int i = 0; i < 20; i++) {
-    for (int j = 0; j < 10; j++) {
-      if (occupied[i][j]) {
-        fill(colorMap[i][j]);
-        rect(j*blockWidth, i*blockWidth, blockWidth, blockWidth);
-      }
-    }
-  }
-  
-  if (onlinePlay){
-    println("Playing online");
-  }
-}
 
 int[][] copy2d(int array2d[][]){
   // a helper function
@@ -146,64 +112,22 @@ int chooseNext(){
   return rand;
 }
 
-void moveDown(int lineNum){
-  //moves down all blocks starting from lineNum
-  for (int i = lineNum; i > 0; i--){
-    occupied[i] = occupied[i-1].clone();
-    colorMap[i] = colorMap[i-1].clone();
-  }
-}
 
-void clearLine(int lineNum){
-  //clears the line lineNum
-  for (int i = 0; i < 10; i++){
-    occupied[lineNum][i] = false;
-  }
-  clear.play();
-  moveDown(lineNum);
-}
-
-void fixBoard(){
-  // This function checks if any lines will be cleared or moved down
-  int totalCleared = 0;
-  for (int i = 0; i < 20; i++){
-    boolean allFilled = true;
-    boolean allEmpty = false;
-    for (int j = 0; j < 10; j++){
-      allFilled &= occupied[i][j];
-      allEmpty |= occupied[i][j];
-    }
-    if (allFilled){
-      clearLine(i);
-      totalCleared++;
-    }
-    if (!allEmpty){
-      moveDown(i);
-    }
-  }
-  
-  // goes to the next level
-  linesCleared += totalCleared;
-  addPoints(totalCleared);
-  if (totalCleared != 0){
-    level = (int)((-1 + sqrt(1 + 4*linesCleared))/2); // solves the equation linesCleared = ((level)(level+1))/2
-  }
-}
 
 void addPoints(int linesCleared){
   // adds points depending on the number of lines cleared
   switch(linesCleared){
     case 1:
-      score += 40 * (level+1);
+      score += 40 * (grid.level+1);
       break;
     case 2:
-      score += 100 * (level+1);
+      score += 100 * (grid.level+1);
       break;
     case 3:
-      score += 300 * (level+1);
+      score += 300 * (grid.level+1);
       break;
     case 4:
-      score += 1200 * (level+1);
+      score += 1200 * (grid.level+1);
       break;
   }
   score += boy.softDrop; // adds points for the drop
@@ -231,7 +155,7 @@ void hold(){
 
 void gameScreen(){
   // holds the game screen
-  createGame();
+  grid.createGame();
   boy.makeBlocks();
   nextBoy.makeBlocks();
   if (hold != null){
@@ -259,7 +183,7 @@ void gameScreen(){
   }
   
   // makes the block fall at a certian speed
-  if (frameCount % ceil(60 / pow(1 + difficulty*2/100 ,level))  == 0) {
+  if (frameCount % ceil(60 / pow(1 + difficulty*2/100 ,grid.level))  == 0) {
     boy.fall();
   }
   
@@ -352,22 +276,33 @@ void hostScreen(){
   textSize(20);
   text("Your IP is: " + myIP, 100, 400);
   text("Hosting on port 7777", 100, 450);
-  startButton.buildButton();
   client = server.available();
+  server.write("wait");
   
   if (client == null){
     startButton.fill = color(89, 98, 112);
   } else {
     startButton.fill = color(0, 0, 0);
   }
+  startButton.buildButton();
+  
+  if (clientName != null && client != null){
+    text("You are connected to "+clientName, 100, 500);
+  }
   
   if (startButton.isPressed() && client != null) {
     println("Game Started");
     server.write("start");
     onlinePlay = true;
+    isServer = true;
     screen = 3;
   }
   
+}
+
+void serverEvent(Client client){
+  // runs when the enemy connects
+  clientName = client.ip();
 }
 
 void joinScreen(){
@@ -385,6 +320,7 @@ void joinScreen(){
     }
     else if (keyPressed && key == ENTER){
       text("Searching for server", 100, 350);
+      client = new Client(this, inputtedIP, 7777);
       searchingForServer = true; 
     }
     else if (keyPressed && key == BACKSPACE && inputtedIP.length() != 0){
@@ -394,12 +330,16 @@ void joinScreen(){
     }
   }
   else{
-    client = new Client(this, inputtedIP, 7777);
-    if (client.available() > 0 && client.available() != 123){
-      text("Waiting for server to start game", 100, 300);
-      onlinePlay = true;
-    } else if (client.available() == 123) {
-      screen = 3;
+    client.write(10);
+    String received = client.readString();
+    println(received);
+    if (received != null){ //<>//
+      if (received.equals("wait")){
+        text("Waiting for server to start game", 100, 300);
+        onlinePlay = true;
+      } else if (received.equals("start")){
+        screen = 3;
+      }
     } else {
       text("Server not found", 100, 300);
     }
@@ -410,19 +350,20 @@ void joinScreen(){
 void setup() {
   //runs once
   size(600, 800);
+  frameRate(30);
 }
 
 void gameSetup(){
   // setups up the game
-  
+  frameRate(60);
   //initialises occupied blocks
   for (int i = 0; i<19; i++) {
     for (int j = 0; j<10; j++) {
-      occupied[i][j] = false;
+      grid.occupied[i][j] = false;
     }
   }
   for (int i = 0; i<10; i++) {
-    occupied[20][i] = true;
+    grid.occupied[20][i] = true;
   }
  
   // plays the song
@@ -448,6 +389,7 @@ void controllerSetup(){
   if (stick == null){
     println("no recognised controller connected");
   }
+  
 }
 
 void loadingScreen(){
@@ -544,6 +486,7 @@ void controllerInput(){
     lastPressed1 = frameCount;
   }
 }
+
 
 void keyPressed() {
   //handles a key being pressed
