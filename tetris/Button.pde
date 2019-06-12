@@ -33,12 +33,18 @@ class Button{
         return true;
       }
     }
+    if (this.isHover()){
+      fill = color(50,50,50);
+    }
+    else{
+      fill = color(0,0,0);
+    }
     return false;  
   }
   
   boolean isHover(){
     // returns whether or not the button is hovered over
-    if (mouseX > buttonX && mouseX < buttonX + buttonWidth && mouseY > buttonY && mouseY > buttonY + buttonHeight){
+    if (mouseX > buttonX && mouseX < buttonX + buttonWidth && mouseY > buttonY && mouseY < buttonY + buttonHeight){
         return true;
     }
     return false;

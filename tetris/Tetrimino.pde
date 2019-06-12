@@ -11,6 +11,11 @@ class Tetrimino {
   int start; // holds the framecount it began at
   int position; // 0 = controlled by player, 1 = next up, 2 = in hold
   int type; // store the type of the tetrimino
+  int blockWidth = 40; // holds the pixel width of each square block\
+  int gameWidth = blockWidth*10; // holds the length of the borad
+  int gameHeight = blockWidth*20; // holds the height of the board
+
+  
   
   Tetrimino(Tetrimino copy, int pos){
     // copies another Tetrimino
@@ -131,8 +136,8 @@ class Tetrimino {
   boolean checkIfEnd() {
     //checks if the tetrimino has hit the ground
     for (int[] block : blocks) {
-      if (occupied[block[1]+1][block[0]]) {
-        if (occupied[0][5]){ // ends the game
+      if (grid.occupied[block[1]+1][block[0]]) {
+        if (grid.occupied[0][5]){ // ends the game
           screen = 2;
         }
         return true;
@@ -180,10 +185,10 @@ class Tetrimino {
   void makePerminant() {
     //makes the tetrimino part of the board
     for (int[] block : blocks) {
-      occupied[block[1]][block[0]] = true;
-      colorMap[block[1]][block[0]] = c;
+      grid.occupied[block[1]][block[0]] = true;
+      grid.colorMap[block[1]][block[0]] = c;
     }
-    fixBoard();
+    grid.fixBoard();
     drop.play();
   }
 
@@ -191,7 +196,7 @@ class Tetrimino {
     //moves the tetrimino left
     //checks if the tetrimino will go offscreen or go into a tetrimino that is placed
     for (int i = 0; i < 4; i++) {
-      if (blocks[i][0] - 1 < 0 || occupied[blocks[i][1]][blocks[i][0] - 1]) {
+      if (blocks[i][0] - 1 < 0 || grid.occupied[blocks[i][1]][blocks[i][0] - 1]) {
         return;
       }
     }
@@ -206,7 +211,7 @@ class Tetrimino {
     // moves the tetrimino right
     //checks if the tetrimino will go offscreen or go into a tetrimino that is placed
     for (int i = 0; i < 4; i++) {
-      if (blocks[i][0] + 1 >= gameWidth/blockWidth || occupied[blocks[i][1]][blocks[i][0]+1]) {
+      if (blocks[i][0] + 1 >= gameWidth/blockWidth || grid.occupied[blocks[i][1]][blocks[i][0]+1]) {
         return;
       }
     }
@@ -245,7 +250,7 @@ class Tetrimino {
     
     // doesn't rotate the tetrimino if it will go into an occupied space
     for (int i = 0; i < 4; i++){
-      if (occupied[temp[i][1]][temp[i][0]]){
+      if (grid.occupied[temp[i][1]][temp[i][0]]){
         return;
       }
     }
