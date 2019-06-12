@@ -35,8 +35,6 @@ String dropName = "drop.ogg";
 String clearName = "clearSingle.mp3";
 String path;
 
-int score = 0; // holds the players score
-int amount = 7; // holds the amount of tetrimino block types
 boolean fall = true; // holds whether or not the tetrimino should fall
 int time = 31; // holds the time since the tetrimino hit a surface
 int screen = 0; // holds the screen you are currently on
@@ -52,7 +50,7 @@ Tetrimino hold; // holds the tetrimino in hold
 Tetrimino temp; // is a temporary tetrimino for switching boy and hold
 int difficulty = 50; // holds the difficulty of the game
 
-Grid grid = new Grid();
+Grid grid; // holds the grid that will be used
 
 Button startButton = new Button(100, 150, 400, 100, "Single Player");
 Button hostServer = new Button(100, 300, 200, 100, "Host Server");
@@ -63,6 +61,7 @@ Button enableController = new Button(100,100,400,100, "Enable controller");
 Button setDifficulty = new Button(100, 250, 400, 100, "Difficulty: " + difficulty);
 Button setSensitivity = new Button(100, 400, 400, 100, "Controller Sensitivity: "+ (10-wait));
 Button returnToMenu = new Button(100, 550, 400, 100, "Return to the menu");
+Button returnGameover = new Button(100, 400, 400, 100, "Return to the menu");
 
 boolean controller = false; // holds whether or not you are playing with a compatable controller
 
@@ -98,15 +97,15 @@ int chooseNext(){
 
   if (nextTetrimino[0] == -1){
     ArrayList<Integer> values = new ArrayList<Integer> (Arrays.asList(0,1,2,3,4,5,6));
-    for (int i = 0; i < amount; i++){
-      randomLoc = (int) random(0,amount-i);
+    for (int i = 0; i < 7; i++){
+      randomLoc = (int) random(0,7-i);
       nextTetrimino[i] = values.get(randomLoc);
       values.remove(randomLoc);
     }
     nextTetrimino[7] = -1;
   }
   rand = nextTetrimino[0];
-  for (int i = 0; i < amount; i ++){
+  for (int i = 0; i < 7; i ++){
     nextTetrimino[i] = nextTetrimino[i+1];
   }
   return rand;
@@ -118,19 +117,19 @@ void addPoints(int linesCleared){
   // adds points depending on the number of lines cleared
   switch(linesCleared){
     case 1:
-      score += 40 * (grid.level+1);
+      grid.score += 40 * (grid.level+1);
       break;
     case 2:
-      score += 100 * (grid.level+1);
+      grid.score += 100 * (grid.level+1);
       break;
     case 3:
-      score += 300 * (grid.level+1);
+      grid.score += 300 * (grid.level+1);
       break;
     case 4:
-      score += 1200 * (grid.level+1);
+      grid.score += 1200 * (grid.level+1);
       break;
   }
-  score += boy.softDrop; // adds points for the drop
+  grid.score += boy.softDrop; // adds points for the drop
 
 }
 
@@ -190,9 +189,18 @@ void gameScreen(){
 }
 
 void gameOverScreen(){ 
-  // comes up when the player loses
+  // comes up when the player loses  
   background(0);
-  text("gameover",width/2,height/2);
+  textSize(40);
+  text("GAMEOVER", width/2 - 110, 80);
+  text("You scored ", width/2 - 110, 200);
+  text(grid.score, width/2 - 11*(Integer.toString(grid.score).length()), 250);
+  text("point"+ (grid.score != 1 ? "s":"") +"!", width/2 - 70, 300);
+  returnGameover.buildButton();
+  if (returnGameover.isPressed()){
+    delay(100);
+    screen = 0;
+  }
 }
 
 void settingsScreen(){
@@ -355,9 +363,11 @@ void setup() {
 
 void gameSetup(){
   // setups up the game
+  grid = new Grid();
+  
   frameRate(60);
   //initialises occupied blocks
-  for (int i = 0; i<19; i++) {
+  for (int i = 0; i<20; i++) {
     for (int j = 0; j<10; j++) {
       grid.occupied[i][j] = false;
     }
@@ -400,9 +410,11 @@ void loadingScreen(){
   text("Please wait, loading...", 200, 100);
   if (!controller){
     text("Keyboard Controls:", 20, 200);
-    text("- Arrow keys for movement", 40, 250);
-    text("- A and D for rotation", 40, 300);
-    text("- W to hold", 40, 350);
+    text("- Left and Right for movement", 40, 250);
+    text("- Up for a Hard Drop", 40, 300);
+    text("- Down for a Soft Drop", 40, 350);
+    text("- A and D for rotation", 40, 400);
+    text("- W to hold", 40, 450);
   }
   screen = 4;
 }

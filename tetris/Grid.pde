@@ -1,4 +1,5 @@
 class Grid{
+  int score = 0; // holds the players score
   int blockWidth = 40; // holds the pixel width of each square block
   int gameWidth = blockWidth*10; // holds the length of the borad
   int gameHeight = blockWidth*20; // holds the height of the board
