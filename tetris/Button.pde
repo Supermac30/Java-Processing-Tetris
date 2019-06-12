@@ -33,7 +33,7 @@ class Button{
         return true;
       }
     }
-    if (isHover()){
+    if (this.isHover()){
       fill = color(50,50,50);
     }
     else{
