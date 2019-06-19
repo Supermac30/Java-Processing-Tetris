@@ -3,6 +3,7 @@ This is my 11U Computer Science CPT. I am still working on it despite the fact t
 
 The game is almost fully complete except for the online feature. 
 I would put an executable on here but the files processing creates is too big for GitHub.
+An android version of the game can be found in the android folder.
 
 To play download this directory and run the file 'tetris.pde'.
 
@@ -23,3 +24,4 @@ The game is preconfigured with a Playstation classic controller but any controll
 - [ ] add a pause button
 - [X] refactor code to put all grid methods in a class
 - [ ] add online functionality
+- [ ] fix the UI for android
