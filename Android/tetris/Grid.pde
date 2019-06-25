@@ -1,6 +1,6 @@
 class Grid{
   int score = 0; // holds the players score
-  int blockWidth = 40; // holds the pixel width of each square block
+  int blockWidth = width/20; // holds the pixel width of each square block
   int gameWidth = blockWidth*10; // holds the length of the borad
   int gameHeight = blockWidth*20; // holds the height of the board
   boolean occupied[][] = new boolean[21][10]; // stores all the currently occupied blocks
@@ -41,7 +41,7 @@ class Grid{
         }
       }
     }
-    
+    /*
     //handles the sockets in game
     if (onlinePlay){
       if (isServer){
@@ -70,6 +70,7 @@ class Grid{
         }
       }
     }
+    */
   }
 
   void attacked(int lines){
@@ -108,7 +109,7 @@ class Grid{
     for (int i = 0; i < 10; i++){
       this.occupied[lineNum][i] = false;
     }
-    clear.play();
+    //clear.play();
     this.moveDown(lineNum);
   }
   
@@ -134,10 +135,12 @@ class Grid{
     // goes to the next level
     linesCleared += totalCleared;
     addPoints(totalCleared);
+    /*
     if (onlinePlay && totalCleared != 0){
       attackEnemy = totalCleared;
       send = true;
     }
+    */
     if (totalCleared != 0){
       level = (int)((-1 + sqrt(1 + 4*linesCleared))/2); // solves the equation linesCleared = ((level)(level+1))/2
     }

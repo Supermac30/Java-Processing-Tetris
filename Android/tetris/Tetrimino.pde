@@ -11,7 +11,7 @@ class Tetrimino {
   int start; // holds the framecount it began at
   int position; // 0 = controlled by player, 1 = next up, 2 = in hold
   int type; // store the type of the tetrimino
-  int blockWidth = 40; // holds the pixel width of each square block\
+  int blockWidth = width/20; // holds the pixel width of each square block\
   int gameWidth = blockWidth*10; // holds the length of the borad
   int gameHeight = blockWidth*20; // holds the height of the board
 
@@ -189,7 +189,7 @@ class Tetrimino {
       grid.colorMap[block[1]][block[0]] = c;
     }
     grid.fixBoard();
-    drop.play();
+    //drop.play();
     
   }
 

@@ -8,12 +8,12 @@
  * To ensure no piece drought every piece will come once every 7 times
  */
  
-import processing.sound.*;
+import cassette.audiofiles.SoundFile;
 import java.util.Arrays;
 import org.gamecontrolplus.gui.*;
 import org.gamecontrolplus.*;
 import net.java.games.input.*;
-import processing.net.*;
+//import processing.net.*;
 
 ControlIO control;
 ControlDevice stick;
@@ -64,7 +64,7 @@ Button returnToMenu = new Button(100, 550, 400, 100, "Return to the menu");
 Button returnGameover = new Button(100, 400, 400, 100, "Return to the menu");
 
 boolean controller = false; // holds whether or not you are playing with a compatable controller
-
+/*
 Server server = new Server(this, 7777); // holds the server
 Client client; // holds the client
 boolean onlinePlay = false; // holds whether or not you are playing online
@@ -75,7 +75,7 @@ boolean isServer = false; // holds whether or not the user is the host
 int enemyScore; // holds the score the enemy
 String clientName; // holds the name of the client
 int attackEnemy = 0; // holds how many lines to send the enemy
-
+*/
 int[][] copy2d(int array2d[][]){
   // a helper function
   // Copies a 2d array, why isn't this built into java?
@@ -273,6 +273,7 @@ void menuScreen(){
 }
 
 void hostScreen(){
+  /*
   // holds the screen that comes up when you are the server
   background(100,100,100);
   textSize(64);
@@ -301,16 +302,18 @@ void hostScreen(){
     isServer = true;
     screen = 3;
   }
-  
+  */
 }
-
+/*
 void serverEvent(Client client){
   // runs when the enemy connects
   clientName = client.ip();
 }
+*/
 
 void joinScreen(){
   // holds the screen that comes up when you are the client
+  /*
   background(100,100,100);
   textSize(64);
   text("Tetris",width/2 - 100, 100);
@@ -348,13 +351,13 @@ void joinScreen(){
       text("Server not found", 100, 300);
     }
   }
-  
+  */
 }
 
 void setup() {
   //runs once
-  size(600, 800);
   frameRate(30);
+  fullScreen();
 }
 
 void gameSetup(){
@@ -371,7 +374,9 @@ void gameSetup(){
   for (int i = 0; i<10; i++) {
     grid.occupied[20][i] = true;
   }
+  
   // plays the song
+  /*
   path = sketchPath(musicName);
   music = new SoundFile(this, path);
   music.loop();
@@ -381,6 +386,7 @@ void gameSetup(){
   clear = new SoundFile(this, path);
   path = sketchPath(dropName);
   drop = new SoundFile(this, path);
+  */
   screen = 1;
 }
 
@@ -463,7 +469,6 @@ void mousePressed(){
 void touchInput(){
   // This function takes in input from a phone, also works using the mouse
   if (mousePressed && screen == 1){
-    println("hi");
     if (mouseX - 50 > startPress[0] && frameCount - startPress[2] > 10){
       boy.right();
       startPress[2] = frameCount;

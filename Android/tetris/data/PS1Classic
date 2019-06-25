@@ -1,0 +1,9 @@
+Player 1 controller
+Y	Y position	3	SLIDER	Y Axis	0	1.0	0.0
+X	X position	3	SLIDER	X Axis	0	1.0	0.0
+TRIANGLE	triangle button	1	BUTTON	Button 0	0	0.0	0.0
+CIRCLE	circle button	1	BUTTON	Button 1	0	0.0	0.0
+XBUTTON	x button	1	BUTTON	Button 2	0	0.0	0.0
+SQUARE	square button	1	BUTTON	Button 3	0	0.0	0.0
+SELECT	select	1	BUTTON	Button 8	0	0.0	0.0
+START	start	1	BUTTON	Button 9	0	0.0	0.0
