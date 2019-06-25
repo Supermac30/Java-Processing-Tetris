@@ -1,16 +1,14 @@
+# Processing Tetris
+This is a version of tetris written in processing with controller compatability and runs on android.
 This is my 11U Computer Science CPT. I am still working on it despite the fact that I already submitted it.
 
 The game is almost fully complete except for the online feature. 
 I would put an executable on here but the files processing creates is too big for GitHub.
 An android version of the game can be found in the android folder.
 
-To play download this directory and run the file 'tetris.pde'.
+To play download this directory and compile and run the file 'tetris.pde'.
 
-The game is almost fully complete except for the online feature. 
-I would put an executable on here but the files processing creates is too big for GitHub.
-
-To play download this directory and run the file 'tetris.pde'.
-
+The music used is not owned by me and can be found in https://www.youtube.com/watch?v=rDCOcqpWTkY&t=1s
 ## Controller Compatibality
 To connect a controller connect the computer to the controller before opening the game. Make sure to enable it in settings. If the controller feels weird change the sensitivity. 
 
