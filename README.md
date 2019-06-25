@@ -8,7 +8,7 @@ An android version of the game can be found in the android folder.
 
 To play download this directory and compile and run the file 'tetris.pde'.
 
-The music used is not owned by me and can be found in https://www.youtube.com/watch?v=rDCOcqpWTkY&t=1s
+The music used is not owned by me and can be found in https://www.youtube.com/watch?v=rDCOcqpWTkY&t
 ## Controller Compatibality
 To connect a controller connect the computer to the controller before opening the game. Make sure to enable it in settings. If the controller feels weird change the sensitivity. 
 
