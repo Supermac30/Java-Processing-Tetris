@@ -9,7 +9,7 @@ class Button{
   color outline = color (255,255,255); // holds the color of the outline of the button
   color textColor =  color (255,255,255); // holds the color of the text
   boolean locked = false; // holds whether or not the button can currently be used
-  int textSize = 20;
+  int textSize = width/30;
   
   Button(float buttonX, float buttonY, float buttonWidth, float buttonHeight, String text){
     // button constructor
@@ -26,7 +26,7 @@ class Button{
     textSize(textSize);
     rect(buttonX,buttonY,buttonWidth,buttonHeight);
     fill(textColor);
-    text(text, buttonX+(buttonWidth*0.5) - text.length()*4.5, buttonY+(buttonHeight*0.5) + (0.2*textSize));
+    text(text, buttonX+(buttonWidth*0.5) - text.length()*this.textSize/4.5, buttonY+(buttonHeight*0.5) + (0.2*textSize));
   }
   boolean isPressed(){
     // returns whether or not the button has been pressed

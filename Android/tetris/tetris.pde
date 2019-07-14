@@ -35,6 +35,8 @@ String dropName = "drop.ogg";
 String clearName = "clearSingle.mp3";
 String path;
 
+Grid grid; // holds the grid that will be used
+
 boolean fall = true; // holds whether or not the tetrimino should fall
 int time = 31; // holds the time since the tetrimino hit a surface
 int screen = 0; // holds the screen you are currently on
@@ -50,18 +52,17 @@ Tetrimino hold; // holds the tetrimino in hold
 Tetrimino temp; // is a temporary tetrimino for switching boy and hold
 int difficulty = 50; // holds the difficulty of the game
 
-Grid grid; // holds the grid that will be used
-
-Button startButton = new Button(100, 150, 400, 100, "Single Player");
-Button hostServer = new Button(100, 300, 200, 100, "Host Server");
-Button joinServer = new Button(300, 300, 200, 100, "Join Server");
-Button settingsButton = new Button(100, 450, 400, 100, "Settings");
-Button exitButton = new Button(100, 600, 400, 100, "Quit");
-Button enableController = new Button(100,100,400,100, "Enable controller");
-Button setDifficulty = new Button(100, 400, 400, 100, "Difficulty: " + difficulty);
-Button setSensitivity = new Button(100, 250, 400, 100, "Controller Sensitivity: "+ (10-wait));
-Button returnToMenu = new Button(100, 550, 400, 100, "Return to the menu");
-Button returnGameover = new Button(100, 400, 400, 100, "Return to the menu");
+//size(600, 800);
+Button startButton;
+Button hostServer;
+Button joinServer;
+Button settingsButton;
+Button exitButton;
+Button enableController;
+Button setDifficulty;
+Button setSensitivity;
+Button returnToMenu;
+Button returnGameover;
 
 boolean controller = false; // holds whether or not you are playing with a compatable controller
 /*
@@ -145,7 +146,7 @@ void hold(){
     boy = new Tetrimino(hold, 0); // moves the tetrimino in hold into the board
   }
   hold = new Tetrimino(temp, 2); // moves the tetrimino into hold
-  
+
 }
 
 void gameScreen(){
@@ -187,11 +188,11 @@ void gameScreen(){
 void gameOverScreen(){ 
   // comes up when the player loses  
   background(0);
-  textSize(40);
-  text("GAMEOVER", width/2 - 110, 80);
-  text("You scored ", width/2 - 110, 200);
-  text(grid.score, width/2 - 11*(Integer.toString(grid.score).length()), 250);
-  text("point"+ (grid.score != 1 ? "s":"") +"!", width/2 - 70, 300);
+  textSize(width/15);
+  text("GAMEOVER", width*19/60, height/10);
+  text("You scored ", width*19/60, height/4);
+  text(grid.score, width/2 - width*11*(Integer.toString(grid.score).length())/600, height*5/16);
+  text("point"+ (grid.score != 1 ? "s":"") +"!", width*23/60, height*3/8);
   returnGameover.buildButton();
   if (returnGameover.isPressed()){
     hold = null;
@@ -210,8 +211,9 @@ void settingsScreen(){
     enableController.text = "Enable Controller";
     setSensitivity.locked = true;
   }
-  textSize(15);
-  text("Remember to connect your controller before opening the file",80,215);
+
+  textSize(width/40);
+  text("Remember to connect your controller before opening the file", width*2/15, height*43/160);
   
   // enables or disables your controller
   enableController.buildButton();
@@ -223,7 +225,7 @@ void settingsScreen(){
     delay(100);
     controller = !controller;
     if (controller){
-      controllerSetup();
+      //controllerSetup();
     }
   }
   if (setDifficulty.isPressed()){
@@ -245,8 +247,9 @@ void settingsScreen(){
 void menuScreen(){
   // Is the menu that first comes up 
   background(100,100,100);
-  textSize(64);
-  text("Tetris",width/2 - 100, 100);
+  // 600*800
+  textSize(width*8/75);
+  text("Block Busters",width/5, height/8);
   startButton.buildButton();
   settingsButton.buildButton();
   hostServer.buildButton();
@@ -358,6 +361,20 @@ void setup() {
   //runs once
   frameRate(30);
   fullScreen();
+  
+  //size(600, 800);
+  startButton = new Button(width/6, height/5.3, width*2/3, height/8, "Single Player");
+  hostServer = new Button(width/6, height*3/8, width/3, height/8, "Host Server");
+  joinServer = new Button(width/2, height*3/8, width/3, height/8, "Join Server");
+  settingsButton = new Button(width/6, height*9/16, width*2/3, height/8, "Settings");
+  exitButton = new Button(width/6, height*6/8, width*2/3, height/8, "Quit");
+  enableController = new Button(width/6, height/8, width*2/3, height/8, "Enable controller");
+  setDifficulty = new Button(width/6, height/2, width*2/3, height/8, "Difficulty: " + difficulty);
+  setSensitivity = new Button(width/6, height*5/16, width*2/3, height/8, "Controller Sensitivity: "+ (10-wait));
+  returnToMenu = new Button(width/6, height*11/16, width*2/3, height/8, "Return to the menu");
+  returnGameover = new Button(width/6, height/2, width*2/3, height/8, "Return to the menu");
+
+  orientation(PORTRAIT); 
 }
 
 void gameSetup(){
@@ -461,7 +478,7 @@ void mousePressed(){
   startPress[1] = mouseY;
   startPress[2] = frameCount;
   if (screen == 1){
-    if (mouseX > grid.gameWidth+10 && mouseX < grid.gameWidth+180 && mouseY > 536 && mouseY < 716){
+    if (mouseX > grid.gameWidth+width/60 && mouseX < grid.gameWidth+width*3/10 && mouseY > height*67/100 && mouseY < height*179/200){
       hold();
     }
   }

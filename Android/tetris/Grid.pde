@@ -1,6 +1,6 @@
 class Grid{
   int score = 0; // holds the players score
-  int blockWidth = width/20; // holds the pixel width of each square block
+  int blockWidth = width/15; // holds the pixel width of each square block
   int gameWidth = blockWidth*10; // holds the length of the borad
   int gameHeight = blockWidth*20; // holds the height of the board
   boolean occupied[][] = new boolean[21][10]; // stores all the currently occupied blocks
@@ -14,23 +14,23 @@ class Grid{
   void createGame() {
     // creates the background
     background(211, 211, 211);
-    for (int i = 0; i <= gameWidth; i += blockWidth) {
+    for (int i = 0; i <= gameWidth + 0; i += blockWidth) {
       line(i, 0, i, gameHeight);
     }
-    for (int i = 0; i <= gameHeight; i += blockWidth) {
+    for (int i = 0; i <= gameHeight + 0; i += blockWidth) {
       line(0, i, gameWidth, i);
     }
-  
-    textSize(32);
-    // place all outside board elements gameWidth+10 away
+    // 600*800
+    textSize(width*4/75);
+    // place all outside board elements gameWidth+width/60 away
     fill(0,0,0);
-    text("score: "+score, gameWidth+10, 36);
-    text("level: "+level,gameWidth+10,36+50);
-    text("next block", gameWidth+10, 36+150);
-    rect(gameWidth+10, 36+180, 180, 180);
-    text("hold", gameWidth+10, 500);
+    text("score: "+score, gameWidth+width/60, height*9/200);
+    text("level: "+level,gameWidth+width/60, height*43/400);
+    text("next block", gameWidth+width/60, height*93/400);
+    rect(gameWidth+width/60, height*27/100, width*3/10, width*3/10);
+    text("hold", gameWidth+10, height*11/20);
     fill(255,255,255);
-    rect(gameWidth+10, 536, 180, 180);
+    rect(gameWidth+width/60, height*12/20, width*3/10, width*3/10);
   
     // builds all blocks in occupied
     for (int i = 0; i < 20; i++) {

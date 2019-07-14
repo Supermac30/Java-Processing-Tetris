@@ -11,7 +11,7 @@ class Tetrimino {
   int start; // holds the framecount it began at
   int position; // 0 = controlled by player, 1 = next up, 2 = in hold
   int type; // store the type of the tetrimino
-  int blockWidth = width/20; // holds the pixel width of each square block\
+  int blockWidth = width/15; // holds the pixel width of each square block
   int gameWidth = blockWidth*10; // holds the length of the borad
   int gameHeight = blockWidth*20; // holds the height of the board
 
@@ -158,14 +158,14 @@ class Tetrimino {
     if (position == 1){ // if the tetrimino is in the up next block
       fill(c);
       for (int[] block : blocks) {
-        rect(block[0]*blockWidth + gameWidth - 125, block[1]*blockWidth + 230, blockWidth, blockWidth);
+        rect(block[0]*blockWidth + gameWidth - width*5/24, block[1]*blockWidth + height*23/80, blockWidth, blockWidth);
       }
     }
     
     if (position == 2){ // if the tetrimino is in hold
       fill(c);
       for (int[] block : blocks) {
-        rect(block[0]*blockWidth + gameWidth - 125, block[1]*blockWidth + 550, blockWidth, blockWidth);
+        rect(block[0]*blockWidth + gameWidth - width*5/24, block[1]*blockWidth + height*11/16, blockWidth, blockWidth);
       }
     }
   }
@@ -212,7 +212,7 @@ class Tetrimino {
     // moves the tetrimino right
     //checks if the tetrimino will go offscreen or go into a tetrimino that is placed
     for (int i = 0; i < 4; i++) {
-      if (blocks[i][0] + 1 >= gameWidth/blockWidth || grid.occupied[blocks[i][1]][blocks[i][0]+1]) {
+      if (blocks[i][0] + 1 >= 10 || grid.occupied[blocks[i][1]][blocks[i][0]+1]) {
         return;
       }
     }
